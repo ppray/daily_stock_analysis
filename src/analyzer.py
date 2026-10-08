@@ -4705,11 +4705,18 @@ class GeminiAnalyzer:
             raise ValueError("ambiguous_json")
         if len(fenced_matches) == 1:
             match = fenced_matches[0]
-            outside = (text[:match.start()] + text[match.end():]).strip()
-            if outside:
-                raise ValueError("ambiguous_json")
             fence_lang = (match.group("lang") or "").strip().lower()
             if fence_lang not in {"", "json"}:
+                raise ValueError("ambiguous_json")
+            outside = (text[:match.start()] + text[match.end():]).strip()
+            # Prose around a fence explicitly labelled json (a title or a closing summary)
+            # is tolerated only when it has no brace or fence marker to hide another candidate.
+            if outside and (
+                fence_lang != "json"
+                or "{" in outside
+                or "}" in outside
+                or "```" in outside
+            ):
                 raise ValueError("ambiguous_json")
             json_str = match.group("body").strip()
             data = self._load_analysis_json_candidate(json_str)
