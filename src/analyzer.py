@@ -3862,9 +3862,10 @@ class GeminiAnalyzer:
                 logger.debug(f"=== 完整 Prompt ({len(prompt)}字符) ===\n{prompt}\n=== End Prompt ===")
 
             # 设置生成配置
+            # 思考模型（如 GLM）的推理 token 也计入上限，8192 常被推理耗尽导致 JSON 截断
             generation_config = {
                 "temperature": config.llm_temperature,
-                "max_output_tokens": 8192,
+                "max_output_tokens": 16384,
             }
 
             logger.info(f"[LLM调用] 开始调用 {model_name}...")
